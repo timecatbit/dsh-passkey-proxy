@@ -1,0 +1,104 @@
+import type { LanProxyStatus, LanProxyUpdateResult } from './contract.ts';
+/** The fully-resolved runtime options of one proxy instance. */
+export interface EffectiveProxyOptions {
+    listenHost: string;
+    listenPort: number;
+    upstreamHost: string;
+    upstreamPort: number;
+    username: string;
+    password: string;
+    launchToken?: string;
+    /** Whether launch-token auto-login is enabled. */
+    skipLaunchToken?: boolean;
+    passkeyOrigin?: string;
+    tlsProxyIPs?: string;
+    passwordLoginEnabled?: boolean;
+    passkeyLoginEnabled?: boolean;
+}
+export interface ProxyControllerOptions {
+    /** Options from the cordis config (schema defaults applied, upstream port resolved). */
+    base: EffectiveProxyOptions;
+    /** Path of the persisted runtime-settings JSON. */
+    settingsFile: string;
+    /** Log sink (the plugin passes ctx.logger-based printer). */
+    log: (level: 'info' | 'warn' | 'error', message: string) => void;
+    /**
+     * Re-reads the host's current launch token. Called when the proxy starts
+     * with auto-login on, and again whenever the settings page turns the flag on
+     * — the token is per-process, so it is never persisted, only the flag is.
+     */
+    readLaunchToken?: () => string | undefined;
+    /** Desktop owns the loopback listener and may pick a different port every run. */
+    readDesktopPort?: () => number | undefined;
+}
+export type UpdateOutcome = {
+    ok: true;
+    result: LanProxyUpdateResult;
+} | {
+    ok: false;
+    message: string;
+};
+/** Result of one start attempt: a failed bind reports the reason instead of passing silently. */
+export type StartOutcome = {
+    ok: true;
+} | {
+    ok: false;
+    message: string;
+};
+export declare class ProxyController {
+    private readonly opts;
+    private handle;
+    private boundPort;
+    private probeCache;
+    private readonly settings;
+    private readonly log;
+    private options;
+    private readonly passkeySettingsManaged;
+    constructor(opts: ProxyControllerOptions);
+    private get authFile();
+    /** Whether a persisted runtime override exists (drives the status flag). */
+    private persisted;
+    /**
+     * Start the proxy (idempotent). Listen errors — the port is already taken,
+     * e.g. by the standalone dsh-proxy — are logged loudly and reported through
+     * the outcome (never thrown), so a failed forwarder can never take down the
+     * web app boot while callers still learn why the listener is down.
+     */
+    start(): Promise<StartOutcome>;
+    /** Stop the proxy and every upgraded socket. */
+    stop(): Promise<void>;
+    /** Stop and start again with the current effective options (the "restart the forwarding service" verb). */
+    restart(): Promise<StartOutcome>;
+    /**
+     * Stop the proxy AFTER the caller's response has flushed back. The stop RPC
+     * answer travels through the proxy itself when the settings page is reached
+     * via the LAN URL, so closing the listener before the response is written
+     * would drop it; the listener is torn down shortly afterwards instead.
+     * @param delayMs - grace before the listener closes (defaults to 300ms).
+     * @returns the status as it will be once stopped.
+     */
+    stopDeferred(delayMs?: number): LanProxyStatus;
+    /**
+     * Current read-only status for the settings page. `upstreamReachable`
+     * reflects the most recent probe (false until the first probe runs).
+     */
+    status(): LanProxyStatus;
+    /**
+     * Status with a fresh upstream reachability probe (cached for a few
+     * seconds so repeated settings-page loads do not hammer the target).
+     */
+    refreshStatus(): Promise<LanProxyStatus>;
+    /**
+     * Probe whether the target upstream service answers HTTP. Any response —
+     * even an error status — counts as reachable; only connection failures and
+     * timeouts turn the light red.
+     */
+    private probeUpstream;
+    /**
+     * Apply an update payload: validate, persist, then restart the forwarding
+     * service with the new effective options.
+     * @param payload - raw RPC payload from the settings page.
+     * @returns the new status, or a user-facing rejection message.
+     */
+    update(payload: unknown, deferRestart?: boolean): Promise<UpdateOutcome>;
+}
