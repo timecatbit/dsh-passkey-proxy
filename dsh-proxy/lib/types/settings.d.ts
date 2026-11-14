@@ -1,4 +1,4 @@
-import type { LanProxyUpdatePayload } from './contract.ts';
+import { type HomeScreenIcon, type LanProxyUpdatePayload } from './contract.ts';
 /** The on-disk shape (a subset of the update payload; no derived fields). */
 export interface PersistedRuntimeSettings {
     lanAccessEnabled?: boolean;
@@ -14,6 +14,7 @@ export interface PersistedRuntimeSettings {
     tlsProxyIPs?: string;
     passwordLoginEnabled?: boolean;
     passkeyLoginEnabled?: boolean;
+    homeScreenIcon?: HomeScreenIcon;
 }
 /** Match equivalent IPv6 spellings and dual-stack IPv4 sockets consistently. */
 export declare function canonicalProxyIP(value: string): string | undefined;

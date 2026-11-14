@@ -35,6 +35,7 @@ var RPC_STATUS_ENDPOINT = "status";
 var RPC_UPDATE_ENDPOINT = "update";
 var RPC_START_ENDPOINT = "start";
 var RPC_STOP_ENDPOINT = "stop";
+var HOME_SCREEN_ICONS = ["dsh", "black", "white"];
 
 // src/client/SettingsSection.tsx
 var import_jsx_runtime = require("react/jsx-runtime");
@@ -88,6 +89,7 @@ function SettingsSection({ rpc, t }) {
   const [tlsProxyIPs, setTlsProxyIPs] = (0, import_react.useState)("");
   const [passwordLoginEnabled, setPasswordLoginEnabled] = (0, import_react.useState)(true);
   const [passkeyLoginEnabled, setPasskeyLoginEnabled] = (0, import_react.useState)(false);
+  const [homeScreenIcon, setHomeScreenIcon] = (0, import_react.useState)("dsh");
   const formSeededRef = (0, import_react.useRef)(false);
   const applyPhase = (0, import_react.useCallback)((next) => {
     phaseRef.current = next;
@@ -103,6 +105,7 @@ function SettingsSection({ rpc, t }) {
     setTlsProxyIPs(next.tlsProxyIPs ?? "");
     setPasswordLoginEnabled(next.passwordLoginEnabled ?? true);
     setPasskeyLoginEnabled(next.passkeyLoginEnabled ?? Boolean(next.passkeyOrigin));
+    setHomeScreenIcon(next.homeScreenIcon ?? "dsh");
   }, []);
   const loadStatus = (0, import_react.useCallback)(async () => {
     applyPhase("loading");
@@ -186,6 +189,7 @@ function SettingsSection({ rpc, t }) {
       if (status?.desktopProfile && lanAccessEnabled !== (status.listenHost === "0.0.0.0")) payload.lanAccessEnabled = lanAccessEnabled;
       if (passwordLoginEnabled !== (status?.passwordLoginEnabled ?? true)) payload.passwordLoginEnabled = passwordLoginEnabled;
       if (passkeyLoginEnabled !== (status?.passkeyLoginEnabled ?? Boolean(status?.passkeyOrigin))) payload.passkeyLoginEnabled = passkeyLoginEnabled;
+      if (homeScreenIcon !== (status?.homeScreenIcon ?? "dsh")) payload.homeScreenIcon = homeScreenIcon;
       if (!passwordLoginEnabled && !passkeyLoginEnabled) {
         setError(t("form.atLeastOne"));
         return;
@@ -465,6 +469,24 @@ function SettingsSection({ rpc, t }) {
           " / 5"
         ] })
       ] }),
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("fieldset", { className: "dsh_lanproxy_group", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("legend", { children: t("form.homeIcon") }),
+        HOME_SCREEN_ICONS.map((choice) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "dsh_lanproxy_checkRow", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "input",
+            {
+              className: "dsh_lanproxy_checkbox",
+              type: "radio",
+              name: "dsh-home-icon",
+              value: choice,
+              checked: homeScreenIcon === choice,
+              onChange: () => setHomeScreenIcon(choice)
+            }
+          ),
+          t(`form.homeIcon.${choice}`)
+        ] }, choice)),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("p", { className: "dsh_lanproxy_fieldHint", children: t("form.homeIconHint") })
+      ] }),
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { className: "dsh_lanproxy_trust", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsx)("summary", { children: t("form.advanced") }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "dsh_lanproxy_field", children: [
@@ -547,6 +569,11 @@ var zh = {
   "form.registeredKeys": "\u5F53\u524D\u57DF\u540D\u5DF2\u6CE8\u518C",
   "form.openHTTPS": "\u5230 HTTPS \u5165\u53E3\u7BA1\u7406 Passkey",
   "form.advanced": "\u9AD8\u7EA7\uFF1ADSH \u542F\u52A8\u4EE4\u724C",
+  "form.homeIcon": "\u4E3B\u5C4F\u5E55\u56FE\u6807",
+  "form.homeIcon.dsh": "DSH \u81EA\u5E26\u56FE\u6807",
+  "form.homeIcon.black": "\u9ED1\u5E95\u767D\u9CB8",
+  "form.homeIcon.white": "\u767D\u5E95\u9ED1\u9CB8",
+  "form.homeIconHint": "\u624B\u673A\u628A DSH \u6DFB\u52A0\u5230\u4E3B\u5C4F\u5E55\u65F6\u7528\u7684\u56FE\u6807\u3002\u66F4\u6362\u540E\uFF0C\u5148\u5220\u6389\u684C\u9762\u4E0A\u539F\u6765\u7684\u56FE\u6807\uFF0C\u518D\u4ECE\u6D4F\u89C8\u5668\u91CD\u65B0\u6DFB\u52A0\u3002",
   "form.passkeyTitle": "Passkey \u767B\u5F55",
   "form.passkeyOrigin": "\u5BF9\u5916 HTTPS \u57DF\u540D",
   "form.tlsProxyIPs": "\u53CD\u4EE3\u6765\u6E90 IP\uFF08\u540C\u673A\u56DE\u73AF\u53EF\u7559\u7A7A\uFF09",
@@ -621,6 +648,11 @@ var en = {
   "form.registeredKeys": "Registered for this domain",
   "form.openHTTPS": "Manage Passkeys on the HTTPS site",
   "form.advanced": "Advanced: DSH launch token",
+  "form.homeIcon": "Home-screen icon",
+  "form.homeIcon.dsh": "DSH's own icon",
+  "form.homeIcon.black": "White whale on black",
+  "form.homeIcon.white": "Black whale on white",
+  "form.homeIconHint": "The icon a phone uses when DSH is added to its home screen. After changing it, remove the old icon from the home screen and add DSH again from the browser.",
   "form.passkeyTitle": "Passkey sign-in",
   "form.passkeyOrigin": "Public HTTPS origin",
   "form.tlsProxyIPs": "Reverse proxy source IPs (optional for loopback)",

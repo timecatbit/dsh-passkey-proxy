@@ -1,4 +1,5 @@
 import { type LoginPolicy } from './browser-auth.ts';
+import type { HomeScreenIcon } from './contract.ts';
 export interface LanProxyOptions {
     /** Interface the proxy binds (0.0.0.0 for LAN access). */
     listenHost: string;
@@ -23,6 +24,12 @@ export interface LanProxyOptions {
     passkeyOrigin?: string;
     trustedTLSProxyIPs?: string[];
     loginPolicy?: LoginPolicy;
+    /**
+     * `black`/`white` answers apple-touch-icon.png and the manifest PNG icons
+     * with the bundled black-and-white whale instead of DSH's own; `dsh` or
+     * unset forwards them to DSH as before.
+     */
+    homeScreenIcon?: HomeScreenIcon;
     /** Optional sink for human-readable lifecycle messages. */
     log?: (level: 'info' | 'warn' | 'error', message: string) => void;
 }
