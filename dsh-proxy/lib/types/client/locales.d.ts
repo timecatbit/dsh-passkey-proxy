@@ -51,11 +51,6 @@ export declare const zh: {
     'form.registeredKeys': string;
     'form.openHTTPS': string;
     'form.advanced': string;
-    'form.homeIcon': string;
-    'form.homeIcon.dsh': string;
-    'form.homeIcon.black': string;
-    'form.homeIcon.white': string;
-    'form.homeIconHint': string;
     'form.passkeyTitle': string;
     'form.passkeyOrigin': string;
     'form.tlsProxyIPs': string;

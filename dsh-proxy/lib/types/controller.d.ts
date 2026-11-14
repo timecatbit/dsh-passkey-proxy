@@ -1,4 +1,4 @@
-import type { HomeScreenIcon, LanProxyStatus, LanProxyUpdateResult } from './contract.ts';
+import type { LanProxyStatus, LanProxyUpdateResult } from './contract.ts';
 /** The fully-resolved runtime options of one proxy instance. */
 export interface EffectiveProxyOptions {
     listenHost: string;
@@ -14,7 +14,6 @@ export interface EffectiveProxyOptions {
     tlsProxyIPs?: string;
     passwordLoginEnabled?: boolean;
     passkeyLoginEnabled?: boolean;
-    homeScreenIcon?: HomeScreenIcon;
 }
 export interface ProxyControllerOptions {
     /** Options from the cordis config (schema defaults applied, upstream port resolved). */
