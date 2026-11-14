@@ -28052,7 +28052,15 @@ var BrowserAuth = class {
 
 // src/proxy.ts
 var AUTH_REALM = "dsh-proxy";
-var PUBLIC_PATHS = /* @__PURE__ */ new Set(["/manifest.webmanifest", "/favicon.svg"]);
+var PUBLIC_PATHS = /* @__PURE__ */ new Set([
+  "/manifest.webmanifest",
+  "/favicon.svg",
+  "/favicon-dark.svg",
+  "/apple-touch-icon.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/icon-maskable-512.png"
+]);
 function lanAddresses(port) {
   const ips = [];
   for (const ifaces of Object.values(import_node_os2.default.networkInterfaces())) {
