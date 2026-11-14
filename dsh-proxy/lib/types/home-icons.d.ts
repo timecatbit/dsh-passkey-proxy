@@ -10,3 +10,11 @@ import type { HomeScreenIcon } from './contract.ts';
  * should be served (the `dsh` choice, or a path that is not a home-screen icon).
  */
 export declare function homeScreenIconPng(choice: HomeScreenIcon | undefined, pathname: string): Buffer | undefined;
+/**
+ * Point the page's apple-touch-icon link at a URL unique to the chosen whale
+ * (`/apple-touch-icon.png?v=black`). A phone, or a CDN that sets its own
+ * browser cache lifetime, may still hold DSH's icon under the bare URL; a new
+ * URL makes "Add to Home Screen" fetch the chosen one. Adds the link when the
+ * page has none (DSH 0.2.1-rc.5). Leaves the page alone for `dsh`.
+ */
+export declare function pinHomeScreenIcon(html: string, choice: HomeScreenIcon | undefined): string;

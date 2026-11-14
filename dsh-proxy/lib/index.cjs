@@ -28093,6 +28093,14 @@ function homeScreenIconPng(choice, pathname) {
   }
   return png;
 }
+var TOUCH_ICON_LINK = /<link\b[^>]*\brel=["']?apple-touch-icon["']?[^>]*>/i;
+function pinHomeScreenIcon(html, choice) {
+  if (choice !== "black" && choice !== "white") return html;
+  const tag = `<link rel="apple-touch-icon" href="/apple-touch-icon.png?v=${choice}" />`;
+  if (TOUCH_ICON_LINK.test(html)) return html.replace(TOUCH_ICON_LINK, tag);
+  const head = html.toLowerCase().indexOf("</head>");
+  return head === -1 ? html : html.slice(0, head) + tag + html.slice(head);
+}
 
 // src/proxy.ts
 var AUTH_REALM = "dsh-proxy";
@@ -28175,7 +28183,7 @@ function startLanProxy(options) {
     attachBodyTransform(res, proxyRes, (plain) => {
       const text = plain.toString("utf8");
       if (isHtml) {
-        return Buffer.from(injectPolyfill(text, RANDOM_UUID_POLYFILL));
+        return Buffer.from(pinHomeScreenIcon(injectPolyfill(text, RANDOM_UUID_POLYFILL), options.homeScreenIcon));
       }
       const { code, matched } = patchClientScript(text);
       if (matched.length > 0) {
