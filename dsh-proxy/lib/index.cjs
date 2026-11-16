@@ -28574,7 +28574,7 @@ var RPC_START_ENDPOINT = "start";
 var RPC_STOP_ENDPOINT = "stop";
 
 // src/index.ts
-var name = "@smanx/dsh-proxy";
+var name = "@timecatbit/dsh-passkey-proxy";
 var inject = ["webServer", "connection", "profileContext"];
 var Config = Schema.object({
   listenHost: Schema.string(),
