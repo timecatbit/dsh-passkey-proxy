@@ -23175,14 +23175,28 @@ var LaunchTokenAutoLogin = class {
   target;
   token;
   log;
+  read;
   constructor(options) {
     this.target = { host: options.upstreamHost, port: options.upstreamPort };
     this.token = options.launchToken ?? "";
+    this.read = options.readLaunchToken;
     this.log = options.log;
   }
-  /** True when a token was supplied and the feature can act. */
+  /** The token, read from the host on first use if it was not known at start; '' when there is none. */
+  currentToken() {
+    if (this.token === "" && this.read !== void 0) {
+      try {
+        this.token = this.read() ?? "";
+      } catch {
+        this.token = "";
+      }
+      if (this.token !== "") this.log?.("info", "launch-token auto-login: token read from the host on first use");
+    }
+    return this.token;
+  }
+  /** True when a token was supplied (or can now be read) and the feature can act. */
   get enabled() {
-    return this.token !== "";
+    return this.currentToken() !== "";
   }
   /**
    * Authenticate one client request with the launch token if it needs it.
@@ -23217,7 +23231,7 @@ var LaunchTokenAutoLogin = class {
       "info",
       "launch-token auto-login: upstream answered 401, completing the token exchange on the client\u2019s behalf"
     );
-    req.url = withToken(req.url ?? "/", this.token);
+    req.url = withToken(req.url ?? "/", this.currentToken());
   }
 };
 
@@ -28120,6 +28134,7 @@ function startLanProxy(options) {
     upstreamHost,
     upstreamPort,
     launchToken,
+    readLaunchToken: options.readLaunchToken,
     log
   });
   proxy.on("proxyRes", (proxyRes, _req, res) => {
@@ -28321,10 +28336,11 @@ var ProxyController = class {
       if (this.options.upstreamPort !== port) this.probeCache = null;
       this.options.upstreamPort = port;
     }
+    const lazyToken = this.options.skipLaunchToken === true ? this.opts.readLaunchToken : void 0;
     if (this.options.skipLaunchToken === true && this.opts.readLaunchToken !== void 0) {
       const token2 = this.opts.readLaunchToken();
       if (token2 === void 0 || token2 === "") {
-        log("warn", "dsh-proxy: skipLaunchToken is on but the host supplied no launch token; the LAN surface still requires DSH authentication");
+        log("info", "dsh-proxy: the host has no launch token yet; auto-login reads it on the first request");
       } else {
         this.options.launchToken = token2;
         log("info", "dsh-proxy: launch-token auto-login enabled \u2014 a first-time browser is authenticated without the token");
@@ -28338,6 +28354,7 @@ var ProxyController = class {
       username: this.options.username,
       password: this.options.password,
       launchToken: this.options.launchToken,
+      readLaunchToken: lazyToken,
       authFile: this.authFile,
       passkeyOrigin: this.options.passkeyOrigin || void 0,
       trustedTLSProxyIPs: trustedProxyIPs(this.options.tlsProxyIPs),
@@ -28592,16 +28609,30 @@ var Config = Schema.object({
   skipLaunchToken: Schema.boolean()
 });
 function readLaunchToken(ctx) {
+  const base = "http://dsh-proxy.local/";
+  const tokenOf = (raw) => {
+    const url = new URL(raw);
+    if (url.origin !== new URL(base).origin || url.pathname !== "/") return void 0;
+    const tokens = url.searchParams.getAll("token");
+    return tokens.length === 1 && tokens[0] !== "" ? tokens[0] : void 0;
+  };
   try {
     const connection = ctx.connection;
     const authenticatedUrl = connection.authenticatedUrl;
-    if (typeof authenticatedUrl !== "function") return void 0;
-    const raw = authenticatedUrl.call(connection, "http://dsh-proxy.local/");
-    const token2 = new URL(raw).searchParams.get("token");
-    return token2 === null || token2 === "" ? void 0 : token2;
+    if (typeof authenticatedUrl === "function") return tokenOf(authenticatedUrl.call(connection, base));
   } catch {
-    return void 0;
   }
+  try {
+    const entries = [];
+    const emitter = ctx;
+    emitter.emit(ctx.webServer, "webserver/entry-url", base, entries);
+    for (const entry of entries) {
+      const token2 = tokenOf(entry.url);
+      if (token2 !== void 0) return token2;
+    }
+  } catch {
+  }
+  return void 0;
 }
 function apply(ctx, config) {
   const resolved = Config(config ?? {});

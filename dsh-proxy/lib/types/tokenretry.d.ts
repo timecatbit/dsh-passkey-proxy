@@ -62,8 +62,14 @@ export interface LaunchTokenAutoLoginOptions {
     upstreamHost: string;
     /** Upstream DSH port. */
     upstreamPort: number;
-    /** The host's launch token; undefined/empty disables the feature. */
+    /** The host's launch token; undefined/empty disables the feature unless `readLaunchToken` supplies one. */
     launchToken?: string;
+    /**
+     * Reads the token from the host on first use when `launchToken` is empty.
+     * DSH >= 0.2.3-alpha.1 registers its token provider after this plugin starts,
+     * so a read at start can come back empty although a token exists moments later.
+     */
+    readLaunchToken?: () => string | undefined;
     /** Log sink. */
     log?: (level: 'info' | 'warn' | 'error', message: string) => void;
 }
@@ -75,10 +81,13 @@ export interface LaunchTokenAutoLoginOptions {
  */
 export declare class LaunchTokenAutoLogin {
     private readonly target;
-    private readonly token;
+    private token;
     private readonly log;
+    private readonly read;
     constructor(options: LaunchTokenAutoLoginOptions);
-    /** True when a token was supplied and the feature can act. */
+    /** The token, read from the host on first use if it was not known at start; '' when there is none. */
+    private currentToken;
+    /** True when a token was supplied (or can now be read) and the feature can act. */
     get enabled(): boolean;
     /**
      * Authenticate one client request with the launch token if it needs it.

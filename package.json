@@ -1,7 +1,7 @@
 {
   "name": "@timecatbit/dsh-passkey-proxy",
   "description": "DSH LAN reverse proxy with password and HTTPS Passkey login, persistent browser sessions, and WebSocket forwarding.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "license": "MIT",
   "author": "timecatbit",
   "repository": {
@@ -60,6 +60,8 @@
     "THIRD-PARTY-NOTICES.md",
     "README.md",
     "README.en.md",
+    "CHANGELOG.md",
+    "CHANGELOG.en.md",
     "dsh-proxy/lib",
     "dsh-proxy/locale",
     "dsh-proxy/cordis.patch.yml",

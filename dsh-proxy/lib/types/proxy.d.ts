@@ -19,6 +19,8 @@ export interface LanProxyOptions {
      * DSH's token check fully in force (the default).
      */
     launchToken?: string;
+    /** Reads the launch token on first use when `launchToken` is empty (see LaunchTokenAutoLogin). */
+    readLaunchToken?: () => string | undefined;
     authFile?: string;
     passkeyOrigin?: string;
     trustedTLSProxyIPs?: string[];
