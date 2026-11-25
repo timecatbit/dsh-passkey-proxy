@@ -27720,7 +27720,8 @@ var BrowserAuth = class {
     }
     try {
       const st = (0, import_node_fs2.lstatSync)(file);
-      if (!st.isFile() || (st.mode & 63) !== 0) throw new Error("auth store must be a private regular file");
+      const othersCanRead = process.platform !== "win32" && (st.mode & 63) !== 0;
+      if (!st.isFile() || othersCanRead) throw new Error("auth store must be a private regular file");
       this.state = JSON.parse((0, import_node_fs2.readFileSync)(file, "utf8"));
       if (this.state.version !== 1 || !/^[\w-]{43}$/.test(this.state.secret) || !Array.isArray(this.state.keys) || !this.state.sessions || typeof this.state.sessions !== "object" || Array.isArray(this.state.sessions)) throw new Error("invalid auth store");
     } catch (err) {
